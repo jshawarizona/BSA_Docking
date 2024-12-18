@@ -1,0 +1,100 @@
+				244mTC Covalent Docking Notes
+
+
+July 2024
+Ubuntu 18.04
+ubuntu@ubuntu:~/ADT/adCovalentDockResidue/adcovalent$ python -V
+Python 2.7.17
+
+
+
+				Install needed programs:
+
+Openbabel 3.1.1
+	https://github.com/openbabel/openbabel/releases
+Autodock 4.2.6
+	https://autodock.scripps.edu/download-autodock4/
+mgltools x86 1.5.7
+	https://ccsb.scripps.edu/mgltools/downloads/ 
+adcovalentdockresidue tutorial
+	https://autodock.scripps.edu/resources/covalent-docking/ 
+	
+
+
+				Install Openbabel python bindings:
+
+First install dependencies.
+
+$ sudo apt install checkinstall
+Optional:	$ sudo apt install wget build-essential checkinstall
+
+$ sudo add-apt-repository universe
+$ sudo apt update
+$ sudo apt install wget build-essential checkinstal
+$ sudo apt install libreadline-gplv2-dev libncursesw5-dev libssl-dev     libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev zlib1g-dev ^C
+
+$ sudo apt install htop
+$ sudo apt install python-pip
+$ pip install numpy==1.8
+
+If failure to install, possibly switch to Python 3.9. 
+
+
+Second, configure MGLTools environment variables by adding paths to the end of .bashrc (OR specify paths in shell).
+
+$ nano ~/.bashrc
+	export PATH=/home/ubuntu/ADT/mgltools/bin:$PATH
+	export PYTHONPATH=/home/ubuntu/ADT/mgltools/MGLToolsPckgs:$PYTHONPATH
+$ source ~/.bashrc
+
+
+Finally, install dev library and python bindings for Openbabel.
+
+$ sudo apt install libopenbabel-dev
+$ sudo apt-get install python-openbabel
+
+If Openbabel install fails, install SWIG into a Conda environment and compile using cmake.
+
+
+
+				Prepare working directory for docking
+
+Must include the following files to function. If not present, all except the AutoDock and AutoGrid files should be present in MGLTools (/home/ubuntu/ADT/mgltools/MGLToolsPckgs/AutoDockTools/Utilities24).
+
+prepareCovalent.py
+	Edit and change "#TODO use Numpy? if not p2 == None:" to "#TODO use Numpy? if not p2 is None:".
+prepare_receptor4.py
+prepare_dpf4.py
+prepare_gpf4.py
+autodock4
+autogrid4
+
+
+
+				Ligand and receptor preparation with AutoDock 4.2.6
+
+$ python prepareCovalent.py --ligand 244mTC_cys34_5n.mol2 --ligindices 36,37 --receptor protein.pdb --residue A:CYS34 --outputfile ligcovalent.pdb
+
+protein.pdb is bsa 4f5s with waters removed and hydrogens added. Ligindices found in PyMOL; 
+$ python prepare.gpf4.py -r protein_rigid.pbdqt -x ligcovalent_flex.pdbqt -l ligcovalent_flex.pdbqt -y -I 20 -o protein.gpf
+	$ python prepare_pdb_split_alt_confs.py -p protein.pdb
+
+$ python prepare_receptor4.py -r protein.pdb -A hydrogens
+$ python prepare_receptor4.py -r ligcovalent.pdb
+
+$ python prepare_flexreceptor4.py -r protein.pdbqt -s protein:A:CYS34
+$ python prepare_flexreceptor4.py -r ligcovalent.pdbqt -s ligcovalent:A:CYS34
+
+$ python prepare_gpf4.py -r protein_rigid.pdbqt -x ligcovalent_flex.pdbqt -l ligcovalent_flex.pdbqt -y -I 20 -o protein.gpf
+$ python prepare_dpf4.py -r protein_rigid.pdbqt -x ligcovalent_flex.pdbqt -l ligcovalent_flex.pdbqt -o ligcovalent_protein.dpf -p move='empty'
+$ touch empty
+
+Make sure to edit DPF file (ligcovalent_protein.dpf) to set energy model. Replace "unbound_model extended" with "unbound_energy 0.0".
+
+$ ./autogrid4 -p protein.gpf -l protein.glg
+$ ./autodock4 -p ligcovalent_protein.dpf -l ligcovalent_protein.dlg
+
+
+
+
+
