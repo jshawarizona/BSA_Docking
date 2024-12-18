@@ -1,0 +1,83 @@
+				244mTC Covalent Docking Notes
+
+July 2024
+Windows 10
+Python 2.5
+
+
+				Install needed programs:
+
+Openbabel 3.1.1
+	https://github.com/openbabel/openbabel/releases
+Autodock 4.2.6
+	https://autodock.scripps.edu/download-autodock4/
+mgltools 1.5.7
+	https://ccsb.scripps.edu/mgltools/downloads/ 
+
+
+				Attribution:
+
+H., Rasouli. (2016). Re: Can someone help with running autogrid4 on my windows PC?. Retrieved from: https://www.researchgate.net/post/Can_someone_help_with_running_autogrid4_on_my_windows_PC/58678e4ecbd5c2338d6e2a67/citation/download. 
+
+
+				Prepare working directory for docking
+
+Must include the following files to function.
+
+AD4.bound.dat
+AD4_parameters.dat
+autodock4
+autogrid4
+
+
+				Ligand and receptor preparation with AutoDock 4.2.6
+
+open ADT> File> Preferences>set> Startup Directory
+Set path, for example: “C:\Users\project".
+
+File > Read Molecule > Select Protein File (“.pdb” file)
+Edit > Hydrogens >Add >>> Polar Only > OK
+Edit > Hydrogens> Merge Non Polar > Continue
+Edit > Charges > Add Kolman Charges > Ok
+File > Save > Write PDB >>> Sort Nodes (Check) > OK > (Overwrite) YES
+
+Ligand > Input > Open> Select Ligand File (“.pdb” file) > OK
+Edit > Charges > compute Gasteiger
+Ligand > Output > Save as PDBQT
+
+
+				Grid generation with AutoGrid
+
+Note that file extensions like ".gpf" must be typed manually or the program will fail.
+
+Grid > Macromole > Choose >  Click (Protein) > Select Molecule > OK > save
+Grid> Set Map types > Choose Ligand > Click (Ligand) > Select Ligand
+Grid > GridBox > Set the BOX > File > Close Saving Current
+Grid > Output > Save GPF > grid.gpf > save
+Run > Run AutoGrid
+	Select Program Pathname: ‘autogrid4.exe’ or appropriate path
+	Select Parameter Filename: ‘grid.gpf’ or appropriate path
+	Launch. Do not exit the popup window.
+
+
+				Docking pose generation with AutoDock
+
+Docking > Macromolecule > Set Rigid filename > Select ‘Protein.pdbqt’ > Open
+Docking > Ligand > Choose> Click ‘Ligand’ > Select Ligand > Accept
+Docking > Search Parameters > Genetic Algorithm > Accept
+Docking > Output > Lamarckian GA > Save file as ‘dock.dpf’
+
+Two options:
+
+a) run AutoDock from ADT. Only one instance at a time.
+
+Run > Run AutoDock 
+	Select Program Pathname: ‘autodock4.exe’ or appropriate path
+	Select Parameter Filename: ‘dock.dpf’ or appropriate path
+	Launch. Do not exit the popup window.
+
+b) Run AutoDock from bash. Run multiple dockings in parallel.
+
+.\autodock4 -p dock.dpf -l dock.dlg
+
+
